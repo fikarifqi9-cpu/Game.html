@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>School Labyrinth</title>
+<style>
+body{margin:0;background:black;color:white;text-align:center;font-family:sans-serif}
+canvas{background:#111}
+</style>
+</head>
+<body>
+
+<h3>Notebook: <span id="count">0</span>/5</h3>
+<canvas id="c" width="400" height="600"></canvas><br>
+
+<button onclick="move(0,-10)">⬆️</button><br>
+<button onclick="move(-10,0)">⬅️</button>
+<button onclick="move(10,0)">➡️</button><br>
+<button onclick="move(0,10)">⬇️</button>
+
+<script>
+const ctx = c.getContext("2d");
+
+// PLAYER & enemy
+let p={x:20,y:20,s:16};
+let e={x:360,y:560,s:16,v:0.7};
+
+// NOTEBOOK
+let notebooks=[
+ {x:60,y:60,t:false},
+ {x:320,y:80,t:false},
+ {x:180,y:180,t:false},
+ {x:80,y:420,t:false},
+ {x:300,y:360,t:false}
+];
+let collected=0;
+
+// wall / table / classroom walls
+let walls=[
+ // outer walls
+ {x:0,y:0,w:400,h:10},{x:0,y:0,w:10,h:600},
+ {x:390,y:0,w:10,h:600},{x:0,y:590,w:400,h:10},
+
+ // corridor & classroom
+ {x:60,y:0,w:10,h:500},
+ {x:120,y:100,w:10,h:500},
+ {x:180,y:0,w:10,h:500},
+ {x:240,y:100,w:10,h:500},
+ {x:300,y:0,w:10,h:500},
+
+ // classroom table
+ {x:30,y:140,w:60,h:20},
+ {x:30,y:200,w:60,h:20},
+ {x:220,y:220,w:60,h:20},
+ {x:220,y:280,w:60,h:20},
+ {x:140,y:360,w:60,h:20},
+ {x:140,y:420,w:60,h:20}
+];
+
+function collide(nx,ny){
+ for(let w of walls){
+  if(nx<p.s+w.x && nx+p.s>w.x && ny<p.s+w.y && ny+p.s>w.y) return true;
+ }
+ return false;
+}
+
+function move(dx,dy){
+ let nx=p.x+dx, ny=p.y+dy;
+ if(!collide(nx,ny)){p.x=nx;p.y=ny;}
+}
+
+function loop(){
+ ctx.clearRect(0,0,400,600);
+
+ // enemy chase
+ e.x+=Math.sign(p.x-e.x)*e.v;
+ e.y+=Math.sign(p.y-e.y)*e.v;
+
+ // WALL
+ ctx.fillStyle="#555";
+ for(let w of walls) ctx.fillRect(w.x,w.y,w.w,w.h);
+
+ // NOTEBOOK
+ ctx.fillStyle="yellow";
+ for(let n of notebooks){
+  if(!n.t){
+   ctx.fillRect(n.x,n.y,12,12);
+   if(Math.abs(p.x-n.x)<15 && Math.abs(p.y-n.y)<15){
+    n.t=true;
+    collected++;
+    document.getElementById("count").innerText=collected;
+    e.v+=0.4;
+   }
+  }
+ }
+
+ // PLAYER
+ ctx.fillStyle="cyan";
+ ctx.fillRect(p.x,p.y,p.s,p.s);
+
+ // enemy
+ ctx.fillStyle="red";
+ ctx.fillRect(e.x,e.y,e.s,e.s);
+
+ // 
+ if(Math.abs(p.x-e.x)<15 && Math.abs(p.y-e.y)<15){
+  alert("suized 💀");
+  location.reload();
+ }
+
+ // wins
+ if(collected===5){
+  alert("congratulation you found all five notebook ");
+  location.reload();
+ }
+
+ requestAnimationFrame(loop);
+}
+loop();
+</script>
+
+</body>
+</html>
